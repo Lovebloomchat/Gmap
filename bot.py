@@ -1,18 +1,20 @@
 import requests
 import os
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 
 API_KEY = os.getenv("API_KEY")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Send /scrape to start scraping")
+async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    file = await update.message.document.get_file()
+    await file.download_to_drive("keywords.txt")
 
-async def scrape(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Scraping started...")
+    await update.message.reply_text("File received! Scraping started...")
 
-    keywords = open("keywords.txt").read().splitlines()
+    with open("keywords.txt", "r") as f:
+        keywords = f.read().splitlines()
+
     numbers = []
 
     for keyword in keywords:
@@ -34,7 +36,9 @@ async def scrape(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-app.add_handler(CommandHandler("start", start))
+app.add_handler(MessageHandler(filters.Document.ALL, handle_file))
+
+app.run_polling()app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("scrape", scrape))
 
 app.run_polling()
