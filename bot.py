@@ -10,7 +10,7 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file = await update.message.document.get_file()
     await file.download_to_drive("keywords.txt")
 
-    await update.message.reply_text("File received! Scraping started...")
+    await update.message.reply_text("Scraping started...")
 
     with open("keywords.txt", "r") as f:
         keywords = f.read().splitlines()
@@ -35,6 +35,8 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_document(document=open("numbers.txt", "rb"))
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
+app.add_handler(MessageHandler(filters.Document.ALL, handle_file))
+app.run_polling()app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(MessageHandler(filters.Document.ALL, handle_file))
 
